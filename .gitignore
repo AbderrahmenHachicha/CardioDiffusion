@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Data files
+*.csv
+*.pt
+*.h5
+
+# Google Drive
+1_Data/

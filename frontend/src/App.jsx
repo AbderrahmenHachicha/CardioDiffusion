@@ -160,6 +160,9 @@ function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Dashboard state
   const [patients, setPatients] = useState([]);
@@ -242,6 +245,45 @@ function App() {
       const data = await res.json();
       setDoctorName(data.doctor_name);
       setToken(data.access_token);
+      
+      // Clear form inputs
+      setUsername('');
+      setPassword('');
+    } catch (err) {
+      setLoginError(err.message);
+    }
+  };
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    if (password !== confirmPassword) {
+      setLoginError('Passwords do not match');
+      return;
+    }
+    if (password.length < 6) {
+      setLoginError('Password must be at least 6 characters long');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, name: fullName })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Sign up failed');
+      }
+      const data = await res.json();
+      setDoctorName(data.doctor_name);
+      setToken(data.access_token);
+      
+      // Clear form inputs
+      setUsername('');
+      setPassword('');
+      setConfirmPassword('');
+      setFullName('');
     } catch (err) {
       setLoginError(err.message);
     }
@@ -444,13 +486,44 @@ function App() {
       <div className="login-wrapper">
         <div className="login-card glass-panel glow-on-hover">
           <div className="login-header">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '6px', color: 'var(--primary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px', color: 'var(--primary)' }}>
               {Icons.heartPulse}
             </div>
             <h1>Cardio<span className="brand-accent">Diffusion</span></h1>
             <p>Clinical ECG Diffusion & Diagnostics Portal</p>
           </div>
-          <form onSubmit={handleLogin}>
+
+          <div className="auth-tabs">
+            <button 
+              type="button"
+              className={`auth-tab ${!isSignUp ? 'active' : ''}`}
+              onClick={() => { setIsSignUp(false); setLoginError(''); }}
+            >
+              Sign In
+            </button>
+            <button 
+              type="button"
+              className={`auth-tab ${isSignUp ? 'active' : ''}`}
+              onClick={() => { setIsSignUp(true); setLoginError(''); }}
+            >
+              Register
+            </button>
+          </div>
+
+          <form onSubmit={isSignUp ? handleSignUp : handleLogin}>
+            {isSignUp && (
+              <div className="form-group">
+                <label>Full Name</label>
+                <input 
+                  type="text" 
+                  className="input-control" 
+                  placeholder="e.g. Dr. Sarah Jenkins"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
             <div className="form-group">
               <label>Username</label>
               <input 
@@ -473,8 +546,21 @@ function App() {
                 required
               />
             </div>
-            <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>
-              Sign In
+            {isSignUp && (
+              <div className="form-group">
+                <label>Confirm Password</label>
+                <input 
+                  type="password" 
+                  className="input-control" 
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            <button type="submit" className="btn-primary" style={{ marginTop: '16px' }}>
+              {isSignUp ? 'Create Doctor Account' : 'Sign In'}
             </button>
             {loginError && (
               <div className="error-message">
@@ -484,6 +570,13 @@ function App() {
             )}
           </form>
 
+          <div className="auth-toggle-prompt">
+            {isSignUp ? (
+              <>Already have an account? <span onClick={() => { setIsSignUp(false); setLoginError(''); }}>Sign In</span></>
+            ) : (
+              <>First time here? <span onClick={() => { setIsSignUp(true); setLoginError(''); }}>Create an account</span></>
+            )}
+          </div>
         </div>
       </div>
     );

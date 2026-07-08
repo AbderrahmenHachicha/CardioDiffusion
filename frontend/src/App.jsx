@@ -442,11 +442,7 @@ function App() {
               </div>
             )}
           </form>
-          <div className="credentials-box">
-            <div className="cred-title">Demo Credentials</div>
-            <div className="cred-item">Username: <code>doctor1</code> &middot; Password: <code>password123</code></div>
-            <div className="cred-item">Username: <code>doctor2</code> &middot; Password: <code>password123</code></div>
-          </div>
+
         </div>
       </div>
     );

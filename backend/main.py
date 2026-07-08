@@ -9,12 +9,12 @@ from sqlalchemy.orm import Session
 from .database import (
     init_db, get_db,
     create_patient, get_patient, get_all_patients, get_patient_by_name_and_doctor,
-    save_prediction, get_patient_history, delete_patient,
+    save_prediction, get_patient_history, delete_patient, create_doctor,
     Patient, Prediction, Doctor
 )
 from .model import predict
 from .llm import explain_prediction
-from .auth import verify_password, create_access_token, decode_access_token
+from .auth import verify_password, create_access_token, decode_access_token, get_password_hash
 
 app = FastAPI(title="CardioDiffusion API", version="1.0.0")
 
@@ -53,6 +53,11 @@ def get_doctor_by_username_helper(db: Session, username: str) -> Optional[Doctor
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+class SignupRequest(BaseModel):
+    username: str
+    password: str
+    name: str
 
 class LoginResponse(BaseModel):
     access_token: str
@@ -105,9 +110,34 @@ class PredictionOut(BaseModel):
 
 # Auth Endpoints
 
+@app.post("/signup", response_model=LoginResponse, status_code=201)
+def signup_route(body: SignupRequest, db: Session = Depends(get_db)):
+    # Clean username
+    username_cleaned = body.username.strip().lower()
+    if not username_cleaned:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+    if not body.name.strip():
+        raise HTTPException(status_code=400, detail="Full name cannot be empty")
+    if len(body.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long")
+        
+    existing_doctor = get_doctor_by_username_helper(db, username_cleaned)
+    if existing_doctor:
+        raise HTTPException(status_code=400, detail="Username is already registered")
+        
+    hashed_pwd = get_password_hash(body.password)
+    doctor = create_doctor(db, username=username_cleaned, password_hash=hashed_pwd, name=body.name.strip())
+    
+    token = create_access_token(subject=doctor.username)
+    return LoginResponse(
+        access_token=token,
+        token_type="bearer",
+        doctor_name=doctor.name
+    )
+
 @app.post("/login", response_model=LoginResponse)
 def login_route(body: LoginRequest, db: Session = Depends(get_db)):
-    doctor = get_doctor_by_username_helper(db, body.username)
+    doctor = get_doctor_by_username_helper(db, body.username.strip().lower())
     if not doctor or not verify_password(body.password, doctor.password_hash):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     

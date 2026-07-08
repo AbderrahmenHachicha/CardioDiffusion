@@ -4,14 +4,14 @@ from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
-from database import (
+from .database import (
     init_db, get_db,
     create_patient, get_patient, get_all_patients,
     save_prediction, get_patient_history,
     Patient, Prediction
 )
-from model import predict
-from llm import explain_prediction
+from .model import predict
+from .llm import explain_prediction
 
 app = FastAPI(title="CardioDiffusion API", version="1.0.0")
 
@@ -28,7 +28,7 @@ def startup():
     init_db()
 
 
-# ── Schemas ──────────────────────────────────────────────────────────────────
+#Schemas 
 
 class PatientCreate(BaseModel):
     name: Optional[str] = None
@@ -59,7 +59,7 @@ class PredictionOut(BaseModel):
         from_attributes = True
 
 
-# ── Patients ──────────────────────────────────────────────────────────────────
+#Patients
 
 @app.post("/patients", response_model=PatientOut, status_code=201)
 def create_patient_route(body: PatientCreate, db: Session = Depends(get_db)):
@@ -79,7 +79,7 @@ def get_patient_route(patient_id: int, db: Session = Depends(get_db)):
     return patient
 
 
-# ── Predictions ───────────────────────────────────────────────────────────────
+#Predictions
 
 @app.post("/patients/{patient_id}/predict", response_model=PredictionOut, status_code=201)
 def predict_route(patient_id: int, body: PredictRequest, db: Session = Depends(get_db)):

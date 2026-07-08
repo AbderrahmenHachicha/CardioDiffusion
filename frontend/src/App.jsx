@@ -178,6 +178,9 @@ function App() {
   // active prediction result
   const [activeResult, setActiveResult] = useState(null);
 
+  // Delete confirmation modal
+  const [deleteModal, setDeleteModal] = useState({ open: false, patientId: null, patientName: '' });
+
   // Sync token to localStorage
   useEffect(() => {
     if (token) {
@@ -298,9 +301,18 @@ function App() {
     setEcgSignalStr('');
   };
 
-  const deletePatient = async (e, patientId) => {
+  const openDeleteModal = (e, patient) => {
     e.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this patient and all their records?')) return;
+    setDeleteModal({ open: true, patientId: patient.id, patientName: patient.name || 'this patient' });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ open: false, patientId: null, patientName: '' });
+  };
+
+  const confirmDeletePatient = async () => {
+    const patientId = deleteModal.patientId;
+    closeDeleteModal();
     try {
       const res = await fetch(`${API_URL}/patients/${patientId}`, {
         method: 'DELETE',
@@ -309,7 +321,6 @@ function App() {
       if (!res.ok && res.status !== 204) {
         throw new Error('Failed to delete patient');
       }
-      // If the deleted patient was selected, clear the view
       if (selectedPatient && selectedPatient.id === patientId) {
         handleNewAnalysis();
       }
@@ -544,7 +555,7 @@ function App() {
                 <button 
                   className="btn-delete-patient" 
                   title="Delete patient"
-                  onClick={(e) => deletePatient(e, p.id)}
+                  onClick={(e) => openDeleteModal(e, p)}
                 >
                   {Icons.trash}
                 </button>
@@ -808,6 +819,29 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.open && (
+        <div className="modal-overlay" onClick={closeDeleteModal}>
+          <div className="modal-card glass-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-icon-wrapper modal-icon-danger">
+              {Icons.alertCircle}
+            </div>
+            <h3 className="modal-title">Delete Patient Record</h3>
+            <p className="modal-desc">
+              Are you sure you want to permanently delete <strong>{deleteModal.patientName}</strong> and all associated diagnostic records? This action cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button className="btn-modal btn-modal-cancel" onClick={closeDeleteModal}>
+                Cancel
+              </button>
+              <button className="btn-modal btn-modal-danger" onClick={confirmDeletePatient}>
+                {Icons.trash} Delete Patient
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

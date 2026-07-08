@@ -5,6 +5,7 @@
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat&logo=react)](https://react.dev/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=flat&logo=pytorch)](https://pytorch.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-Core-black)](https://github.com/langchain-ai/langchain)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model%20Repository-orange)](https://huggingface.co/Abderrahmen7/cardiodiffusion-ecg-classifier)
 
 An enterprise-grade Clinical ECG Diagnostics & Diagnostics Portal. CardioDiffusion leverages a custom 1D CNN + BiLSTM deep learning model to classify ECG signals alongside a LLaMA-based Large Language Model (LLM) interpreter (via LangChain & Groq) to generate clear, medically contextualized interpretative notes for cardiologists and clinical staff.
 
@@ -79,7 +80,7 @@ graph TD
 │   ├── vite.config.js         # Vite configuration
 │   └── package.json           # Frontend dependency manifest
 ├── models/                    # Model Storage Directory
-│   └── cnn_model.pth          # Saved PyTorch weights file
+│   └── cnn_model.pth          # Saved PyTorch weights file (Available on Hugging Face: Abderrahmen7/cardiodiffusion-ecg-classifier)
 ├── requirements.txt           # Python dependency specifications
 └── README.md                  # System Documentation
 ```

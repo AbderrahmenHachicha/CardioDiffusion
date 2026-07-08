@@ -125,8 +125,21 @@ def signup_route(body: SignupRequest, db: Session = Depends(get_db)):
     if existing_doctor:
         raise HTTPException(status_code=400, detail="Username is already registered")
         
+    # Format doctor name with Dr. prefix and Title Case
+    raw_name = body.name.strip()
+    name_lower = raw_name.lower()
+    if not (name_lower.startswith("dr.") or name_lower.startswith("dr ")):
+        formatted_name = f"Dr. {raw_name.title()}"
+    else:
+        if name_lower.startswith("dr."):
+            rest = raw_name[3:].strip().title()
+            formatted_name = f"Dr. {rest}"
+        else:
+            rest = raw_name[2:].strip().title()
+            formatted_name = f"Dr. {rest}"
+
     hashed_pwd = get_password_hash(body.password)
-    doctor = create_doctor(db, username=username_cleaned, password_hash=hashed_pwd, name=body.name.strip())
+    doctor = create_doctor(db, username=username_cleaned, password_hash=hashed_pwd, name=formatted_name)
     
     token = create_access_token(subject=doctor.username)
     return LoginResponse(

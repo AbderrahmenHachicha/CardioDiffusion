@@ -113,6 +113,15 @@ const Icons = {
       <line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
   ),
+  trash: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18"/>
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+      <line x1="10" y1="11" x2="10" y2="17"/>
+      <line x1="14" y1="11" x2="14" y2="17"/>
+    </svg>
+  ),
 };
 
 const formatDate = (dateStr) => {
@@ -287,6 +296,27 @@ function App() {
     setActiveResult(null);
     setPatientHistory([]);
     setEcgSignalStr('');
+  };
+
+  const deletePatient = async (e, patientId) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this patient and all their records?')) return;
+    try {
+      const res = await fetch(`${API_URL}/patients/${patientId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok && res.status !== 204) {
+        throw new Error('Failed to delete patient');
+      }
+      // If the deleted patient was selected, clear the view
+      if (selectedPatient && selectedPatient.id === patientId) {
+        handleNewAnalysis();
+      }
+      await loadPatients();
+    } catch (err) {
+      console.error('Error deleting patient:', err);
+    }
   };
 
   const runAnalysis = async (e) => {
@@ -511,6 +541,13 @@ function App() {
                   <h4>{p.name}</h4>
                   <span>{p.age ? `${p.age} y/o` : 'Age N/A'} &middot; {p.gender || 'Gender N/A'}</span>
                 </div>
+                <button 
+                  className="btn-delete-patient" 
+                  title="Delete patient"
+                  onClick={(e) => deletePatient(e, p.id)}
+                >
+                  {Icons.trash}
+                </button>
               </div>
             ))
           )}

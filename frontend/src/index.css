@@ -1024,3 +1024,29 @@ body {
   animation: spin 1.2s linear infinite;
   display: inline-flex;
 }
+
+/* Delete patient button */
+.btn-delete-patient {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.patient-item:hover .btn-delete-patient {
+  opacity: 1;
+}
+
+.btn-delete-patient:hover {
+  color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.1);
+}

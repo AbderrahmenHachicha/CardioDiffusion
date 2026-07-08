@@ -136,71 +136,6 @@ const formatDate = (dateStr) => {
   }
 };
 
-// Mathematical ECG generator to allow doctors to simulate and test signals easily
-const generateSimulatedECG = (type) => {
-  const signal = new Array(187).fill(0);
-  
-  // Baseline random noise
-  for (let i = 0; i < 187; i++) {
-    signal[i] = 0.05 * Math.sin(i * 0.08) + (Math.random() - 0.5) * 0.015;
-  }
-  
-  const pWave = (t, amp, duration) => amp * Math.exp(-Math.pow(t / duration, 2));
-  
-  if (type === 'Normal') {
-    // Normal sinus beat shape centered around R-peak at index 93
-    for (let i = 0; i < 187; i++) {
-      signal[i] += pWave(i - 71, 0.12, 5);      // P wave
-      signal[i] += pWave(i - 89, -0.08, 1.5);   // Q wave
-      signal[i] += pWave(i - 93, 0.95, 2.2);    // R wave
-      signal[i] += pWave(i - 97, -0.18, 1.8);   // S wave
-      signal[i] += pWave(i - 125, 0.22, 10);     // T wave
-    }
-  } else if (type === 'PVC') {
-    // Premature Ventricular Contraction: early, wide, high-voltage QRS, opposite T wave
-    for (let i = 0; i < 187; i++) {
-      signal[i] += pWave(i - 85, -0.15, 4.0);   // Deep wide notch
-      signal[i] += pWave(i - 93, 0.90, 7.5);    // Very wide R wave (centered at 93)
-      signal[i] += pWave(i - 101, -0.45, 5.0);  // Deep S wave
-      signal[i] += pWave(i - 135, -0.28, 14.0); // Inverted T wave
-    }
-  } else if (type === 'LBBB') {
-    // Left Bundle Branch Block: wide notched R wave, depressed ST
-    for (let i = 0; i < 187; i++) {
-      signal[i] += pWave(i - 68, 0.10, 5);      // P wave
-      signal[i] += pWave(i - 90, 0.65, 4.5);    // First R notch peak
-      signal[i] += pWave(i - 96, 0.60, 4.0);    // Second R notch peak
-      signal[i] += pWave(i - 102, -0.28, 3.5);  // S wave
-      signal[i] += pWave(i - 130, 0.18, 12);     // T wave
-    }
-  } else if (type === 'RBBB') {
-    // Right Bundle Branch Block: wide notched QRS (rSR' pattern)
-    for (let i = 0; i < 187; i++) {
-      signal[i] += pWave(i - 68, 0.10, 5);      // P wave
-      signal[i] += pWave(i - 84, 0.25, 2.0);    // initial r wave
-      signal[i] += pWave(i - 87, -0.15, 2.0);   // S notch
-      signal[i] += pWave(i - 93, 0.85, 3.5);    // tall R' wave (centered at 93)
-      signal[i] += pWave(i - 99, -0.32, 2.5);   // S wave
-      signal[i] += pWave(i - 125, -0.15, 10);   // inverted T wave
-    }
-  } else if (type === 'APB') {
-    // Atrial Premature Beat: early beat with abnormal P wave
-    for (let i = 0; i < 187; i++) {
-      signal[i] += pWave(i - 60, 0.16, 4);      // Early abnormal P wave
-      signal[i] += pWave(i - 89, -0.08, 1.5);   // Q
-      signal[i] += pWave(i - 93, 0.90, 2.0);    // R (centered at 93)
-      signal[i] += pWave(i - 97, -0.18, 1.8);   // S
-      signal[i] += pWave(i - 120, 0.22, 9);     // T
-    }
-  }
-  
-  // Normalize to [0, 1] range
-  const min = Math.min(...signal);
-  const max = Math.max(...signal);
-  const diff = max - min;
-  return signal.map(val => diff > 1e-6 ? (val - min) / diff : 0);
-};
-
 const CLASS_LABELS = {
   'N': 'Normal Beat',
   'A': 'Atrial Premature Beat',
@@ -228,7 +163,6 @@ function App() {
   const [patientAge, setPatientAge] = useState('');
   const [patientGender, setPatientGender] = useState('Male');
   const [ecgSignalStr, setEcgSignalStr] = useState('');
-  const [presetType, setPresetType] = useState('Normal');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState('');
 
@@ -250,16 +184,7 @@ function App() {
     }
   }, [token]);
 
-  // Set preset signal on load or change
-  useEffect(() => {
-    applyPresetSignal(presetType);
-  }, [presetType]);
 
-  const applyPresetSignal = (type) => {
-    if (type === 'Custom') return;
-    const signalArr = generateSimulatedECG(type);
-    setEcgSignalStr(signalArr.join(', '));
-  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -278,7 +203,6 @@ function App() {
         
       if (parsedValues.length === 187 && !parsedValues.some(isNaN)) {
         setEcgSignalStr(parsedValues.join(', '));
-        setPresetType('Custom');
         setAnalysisError('');
       } else {
         setAnalysisError(`Invalid file format: found ${parsedValues.length} numeric values. The signal must contain exactly 187 numbers.`);
@@ -362,8 +286,7 @@ function App() {
     setPatientGender('Male');
     setActiveResult(null);
     setPatientHistory([]);
-    setPresetType('Normal');
-    applyPresetSignal('Normal');
+    setEcgSignalStr('');
   };
 
   const runAnalysis = async (e) => {
@@ -664,46 +587,7 @@ function App() {
                   </div>
                 </div>
 
-                <div className="quick-signals-container">
-                  <div className="quick-signals-label">Simulated Signal Presets</div>
-                  <div className="quick-signals-grid">
-                    <button 
-                      type="button" 
-                      className={`btn-signal-preset ${presetType === 'Normal' ? 'selected' : ''}`}
-                      onClick={() => setPresetType('Normal')}
-                    >
-                      Normal Sinus Rhythm
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`btn-signal-preset ${presetType === 'PVC' ? 'selected' : ''}`}
-                      onClick={() => setPresetType('PVC')}
-                    >
-                      Ventricular Contraction (PVC)
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`btn-signal-preset ${presetType === 'LBBB' ? 'selected' : ''}`}
-                      onClick={() => setPresetType('LBBB')}
-                    >
-                      Left Bundle Block (LBBB)
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`btn-signal-preset ${presetType === 'RBBB' ? 'selected' : ''}`}
-                      onClick={() => setPresetType('RBBB')}
-                    >
-                      Right Bundle Block (RBBB)
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`btn-signal-preset ${presetType === 'APB' ? 'selected' : ''}`}
-                      onClick={() => setPresetType('APB')}
-                    >
-                      Atrial Premature (APB)
-                    </button>
-                  </div>
-                </div>
+
 
                 {/* File Upload Option for Real Examples */}
                 <div className="file-upload-area">
@@ -725,8 +609,8 @@ function App() {
                     >
                       {Icons.upload} Upload ECG File (.csv, .txt)
                     </label>
-                    <span className={`file-upload-status ${presetType === 'Custom' ? 'loaded' : ''}`}>
-                      {presetType === 'Custom' ? (
+                    <span className={`file-upload-status ${ecgSignalStr ? 'loaded' : ''}`}>
+                      {ecgSignalStr ? (
                         <>{Icons.checkCircle} ECG data loaded successfully</>
                       ) : (
                         'Upload a text file containing exactly 187 numbers'

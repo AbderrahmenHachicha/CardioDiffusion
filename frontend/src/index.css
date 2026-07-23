@@ -32,6 +32,106 @@
   color-scheme: dark;
 }
 
+/* ─── Light Theme ─────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-page: #f1f5f9;
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-panel-solid: #ffffff;
+  --bg-card: rgba(241, 245, 249, 0.7);
+  --bg-card-hover: rgba(226, 232, 240, 0.8);
+
+  --primary: #0284c7;
+  --primary-glow: rgba(2, 132, 199, 0.12);
+  --secondary: #0ea5e9;
+  --accent-purple: #4f46e5;
+  --accent-green: #16a34a;
+  --accent-orange: #d97706;
+  --accent-red: #dc2626;
+
+  --text-main: #334155;
+  --text-muted: #64748b;
+  --text-bright: #0f172a;
+
+  --border: rgba(148, 163, 184, 0.25);
+  --border-focus: rgba(2, 132, 199, 0.5);
+  --border-glow: rgba(2, 132, 199, 0.1);
+
+  --shadow-glow: 0 0 24px rgba(2, 132, 199, 0.08);
+  --shadow-card: 0 4px 24px 0 rgba(0, 0, 0, 0.06);
+
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(2, 132, 199, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 85% 75%, rgba(79, 70, 229, 0.03) 0%, transparent 50%);
+}
+
+[data-theme="light"] .glass-panel {
+  background: var(--bg-panel);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .sidebar {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .input-control {
+  background: rgba(241, 245, 249, 0.8);
+  color: var(--text-bright);
+}
+
+[data-theme="light"] .input-control::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+[data-theme="light"] .ecg-graph-wrapper {
+  background: rgba(241, 245, 249, 0.5);
+}
+
+[data-theme="light"] .explanation-box {
+  background: rgba(241, 245, 249, 0.6);
+}
+
+[data-theme="light"] .no-selection {
+  background: rgba(241, 245, 249, 0.4);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+[data-theme="light"] .modal-overlay {
+  background: rgba(15, 23, 42, 0.3);
+}
+
+[data-theme="light"] .doctor-profile {
+  background: rgba(241, 245, 249, 0.6);
+}
+
+[data-theme="light"] .patient-item:hover {
+  background: rgba(241, 245, 249, 0.8);
+}
+
+[data-theme="light"] .patient-item.active {
+  background: rgba(2, 132, 199, 0.06);
+}
+
+[data-theme="light"] .history-item {
+  background: rgba(241, 245, 249, 0.5);
+}
+
+[data-theme="light"] .history-item:hover {
+  background: rgba(241, 245, 249, 0.9);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.2);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.35);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -116,6 +216,7 @@ body {
   max-width: 100%;
   padding: 44px;
   text-align: center;
+  position: relative;
 }
 
 .login-header {
@@ -1227,4 +1328,35 @@ body {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* ─── Theme Toggle Button ────────────────────────────────────────────────── */
+.theme-toggle-btn {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--primary);
+  background: var(--primary-glow);
+  border-color: var(--border-focus);
+  transform: rotate(15deg);
+}
+
+.theme-toggle-btn svg {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-btn:active svg {
+  transform: scale(0.85);
 }

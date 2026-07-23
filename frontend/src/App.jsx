@@ -122,6 +122,24 @@ const Icons = {
       <line x1="14" y1="11" x2="14" y2="17"/>
     </svg>
   ),
+  sun: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2"/>
+      <path d="M12 20v2"/>
+      <path d="m4.93 4.93 1.41 1.41"/>
+      <path d="m17.66 17.66 1.41 1.41"/>
+      <path d="M2 12h2"/>
+      <path d="M20 12h2"/>
+      <path d="m6.34 17.66-1.41 1.41"/>
+      <path d="m19.07 4.93-1.41 1.41"/>
+    </svg>
+  ),
+  moon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+    </svg>
+  ),
 };
 
 const formatDate = (dateStr) => {
@@ -183,6 +201,20 @@ function App() {
 
   // Delete confirmation modal
   const [deleteModal, setDeleteModal] = useState({ open: false, patientId: null, patientName: '' });
+
+  // Theme state
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   // Sync token to localStorage
   useEffect(() => {
@@ -488,6 +520,14 @@ function App() {
           <div className="login-header">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px', color: 'var(--primary)' }}>
               {Icons.heartPulse}
+              <button
+                className="theme-toggle-btn"
+                onClick={toggleTheme}
+                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                style={{ position: 'absolute', top: '20px', right: '20px' }}
+              >
+                {theme === 'dark' ? Icons.sun : Icons.moon}
+              </button>
             </div>
             <h1>Cardio<span className="brand-accent">Diffusion</span></h1>
             <p>Clinical ECG Diffusion & Diagnostics Portal</p>
@@ -600,6 +640,13 @@ function App() {
               <h4>{doctorName}</h4>
               <span>Cardiologist</span>
             </div>
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? Icons.sun : Icons.moon}
+            </button>
             <button className="logout-btn" title="Sign Out" onClick={handleLogout}>
               {Icons.signOut}
             </button>

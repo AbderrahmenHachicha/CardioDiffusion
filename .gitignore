@@ -221,6 +221,10 @@ __marimo__/
 *.csv
 *.pt
 *.h5
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
 
 # Google Drive
 1_Data/
